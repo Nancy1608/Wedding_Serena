@@ -1,127 +1,233 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head>
   <meta charset="UTF-8">
-  <title>Wedding Guest Seating</title>
-
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wedding Guest Check-in</title>
+
 
   <style>
-    body { font-family: Arial, sans-serif; margin: 10px; background: #fff; }
-    h2 { text-align: center; font-size: 1.5em; }
-    input, select, button { padding: 10px; margin: 5px 0; font-size: 16px; }
-    select, input[type="file"] { width: 100%; }
-    button { border: none; border-radius: 6px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 10px; font-size: 16px; text-align: left; }
-    th { background: #f2f2f2; }
-    .btn { padding: 8px 12px; margin: 2px; cursor: pointer; border-radius: 6px; font-size: 14px; }
-    .delete-btn { background: red; color: white; }
-    .arrive-btn { background: green; color: white; }
-    .filter-box { display: flex; gap: 5px; flex-wrap: wrap; }
-    .filter-box input[type="text"] { flex: 1; min-width: 120px; }
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #fffaf0; /* Cream background */
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  header {
+    background: linear-gradient(90deg, #d4af37, #f5deb3);
+    color: #4b3832;
+    text-align: center;
+    padding: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  .controls {
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .controls input,
+  .controls select,
+  .controls button {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  .controls button {
+    background-color: #d4af37;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  .controls button:hover {
+    background-color: #b8962e;
+  }
+  .table-card {
+    background-color: #fff;
+    margin: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .table-header {
+    background-color: #f5deb3;
+    padding: 0.75rem 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .guest-list {
+    padding: 0.5rem 1rem;
+  }
+  .guest-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+  }
+  .guest-name {
+    flex: 1;
+  }
+  .btn-group button {
+    margin-left: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-arrived {
+    background-color: #6b8e23;
+    color: #fff;
+  }
+  .btn-delete {
+    background-color: #b22222;
+    color: #fff;
+  }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head><body>
-
-<h2>Wedding Guest Seating</h2>
-
-
-<input id="uploadExcel" accept=".xlsx, .xls" type="file">
-
-<div class="filter-box">
-    <select id="statusFilter">
-        <option value="All">All</option>
-        <option value="RSVP">RSVP</option>
-        <option value="Arrived">Arrived</option>
-    </select>
-    <input id="searchBox" placeholder="Search by name or table" type="text">
-    <button onclick="renderTable()">Search</button>
+<header>Wedding Guest Check-in</header>
+<div class="controls">
+  <input id="search" placeholder="Search..." type="text">
+  <select id="statusFilter">
+    <option value="all">All</option>
+    <option value="RSVP">RSVP</option>
+    <option value="Arrived">Arrived</option>
+  </select>
+  <button onclick="searchGuests()">Go</button>
+  <button onclick="resetAll()">Reset All to RSVP</button>
 </div>
 
 
-<table id="guestTable">
-
-    <thead>
-        <tr>
-            <th>Guest Name</th>
-            <th>No. of Pax</th>
-            <th>Table No</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-
 <script>
-let guests = [];
+  let guests = [
+    {table:20, pax:4, name:"Boon's Friends", status:"RSVP"},
+    {table:20, pax:6, name:"Serena's Friends", status:"RSVP"},
+    {table:14, pax:2, name:"Ming Ming & Spouse", status:"RSVP"},
+    {table:14, pax:2, name:"Lee Kah Yee & Spouse", status:"RSVP"},
+    {table:14, pax:1, name:"Ming Ming&#8217;s Aunty", status:"RSVP"},
+    {table:14, pax:1, name:"Mrs Lim Tua Lek", status:"RSVP"},
+    {table:14, pax:3, name:"Nicole Yap & Family", status:"RSVP"},
+    {table:8, pax:2, name:"Mr & Mrs Soon Chin Hoon", status:"RSVP"},
+    {table:8, pax:2, name:"Ong Ting Ting & Spouse", status:"RSVP"},
+    {table:8, pax:2, name:"Mr & Mrs Jesse Jee", status:"RSVP"},
+    {table:8, pax:2, name:"Mr & Mrs Lee Peng Koon", status:"RSVP"},
+    {table:8, pax:2, name:"Mr & Mrs Loh Hoi Yew", status:"RSVP"},
+    {table:2, pax:2, name:"Kian Mun & Daughter", status:"RSVP"},
+    {table:2, pax:1, name:"Amy", status:"RSVP"},
+    {table:2, pax:3, name:"Benny & Family", status:"RSVP"},
+    {table:2, pax:4, name:"Victor & Family", status:"RSVP"},
+    {table:21, pax:1, name:"Gurdeu", status:"RSVP"},
+    {table:21, pax:4, name:"Jasvin, Annish & Family", status:"RSVP"},
+    {table:21, pax:3, name:"Sukhvinder & Family", status:"RSVP"},
+    {table:21, pax:2, name:"Dato&#8217; & Datin Jesbil", status:"RSVP"},
+    {table:15, pax:2, name:"Mr & Mrs Chan (Joo Heong)", status:"RSVP"},
+    {table:15, pax:1, name:"Ricky Chan", status:"RSVP"},
+    {table:15, pax:2, name:"Liew Li Fong & Spouse", status:"RSVP"},
+    {table:15, pax:2, name:"Tan Ai Tiang & Spouse", status:"RSVP"},
+    {table:15, pax:1, name:"Kevin Lau", status:"RSVP"},
+    {table:15, pax:2, name:"Mr & Mrs Wong Yok Heng", status:"RSVP"},
+    {table:9, pax:10, name:"Seah Kiat Seng & Family", status:"RSVP"},
+    {table:3, pax:3, name:"Lay Weng & Family", status:"RSVP"},
+    {table:3, pax:6, name:"Carmen & Family", status:"RSVP"},
+    {table:3, pax:1, name:"Nancy", status:"RSVP"},
+    {table:22, pax:2, name:"Mr & Mrs Loh Weng Cheong", status:"RSVP"},
+    {table:22, pax:2, name:"Mr & Mrs Goh Keat Hoe", status:"RSVP"},
+    {table:22, pax:2, name:"Mr & Mrs Eric Woh Pei Su", status:"RSVP"},
+    {table:22, pax:2, name:"Mr & Mrs Francis Wong", status:"RSVP"},
+    {table:22, pax:1, name:"Lim Hong Guan", status:"RSVP"},
+    {table:22, pax:1, name:"Ang Sing Hai", status:"RSVP"},
+    {table:16, pax:2, name:"Mr & Mrs Sunny Phang", status:"RSVP"},
+    {table:16, pax:1, name:"Ms Eng Hui Mun", status:"RSVP"},
+    {table:16, pax:1, name:"Ms Tan Yoke Lan", status:"RSVP"},
+    {table:16, pax:2, name:"Mr & Mrs Ng Kim Siah", status:"RSVP"},
+    {table:16, pax:2, name:"Mr & Mrs Yap Meow Sing", status:"RSVP"},
+    {table:16, pax:2, name:"Mr & Mrs Lim Tow Poe", status:"RSVP"},
+    {table:10, pax:1, name:"Ms Soo Kah Huey", status:"RSVP"},
+    {table:10, pax:2, name:"Dato&#8217; & Datin Soo Kah Eng", status:"RSVP"},
+    {table:10, pax:2, name:"Dato&#8217; & Datin Lew Wai Koung", status:"RSVP"},
+    {table:10, pax:1, name:"Datin Toh Bee Huan", status:"RSVP"},
+    {table:10, pax:2, name:"Mr & Mrs Soo Hock Chuan", status:"RSVP"},
+    {table:10, pax:1, name:"Mdm Lau Yoke Eng", status:"RSVP"},
+    {table:10, pax:1, name:"Mdm Isabelle Fam", status:"RSVP"},
+    {table:4, pax:4, name:"Shirley & Family", status:"RSVP"},
+    {table:4, pax:1, name:"Annie", status:"RSVP"},
+    {table:4, pax:1, name:"Ruby", status:"RSVP"},
+    {table:4, pax:2, name:"Amy Tiew & Ah Ngoh", status:"RSVP"},
+    {table:4, pax:2, name:"Mr & Mrs Sunny Tiew", status:"RSVP"}
+  ];
 
-document.getElementById('uploadExcel').addEventListener('change', handleFile);
-
-function handleFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
-
-        guests = json.map(row => ({
-            name: row[0],
-            pax: row[1],
-            table: row[2],
-            status: 'RSVP'
-        }));
-        renderTable();
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-function renderTable() {
+  function renderTables() {
+    const container = document.getElementById('tablesContainer');
+    container.innerHTML = '';
     const filter = document.getElementById('statusFilter').value;
-    const search = document.getElementById('searchBox').value.toLowerCase();
-    const tbody = document.querySelector('#guestTable tbody');
-    tbody.innerHTML = '';
+    const searchVal = document.getElementById('search').value.toLowerCase();
+    const grouped = {};
+    guests.forEach(g => {
+      if (filter !== 'all' && g.status !== filter) return;
+      if (searchVal && !g.name.toLowerCase().includes(searchVal) && g.table.toString() !== searchVal) return;
+      if (!grouped[g.table]) grouped[g.table] = [];
+      grouped[g.table].push(g);
+    });
+    Object.keys(grouped).sort((a,b) => a - b).forEach(tableNum => {
+      const card = document.createElement('div');
+      card.className = 'table-card';
+      const header = document.createElement('div');
+      header.className = 'table-header';
+      header.innerText = `Table ${tableNum}  (Pax: ${grouped[tableNum].reduce((sum, g) => sum + g.pax, 0)})`;
+      card.appendChild(header);
+      const list = document.createElement('div');
+      list.className = 'guest-list';
+      grouped[tableNum].forEach((g) => {
+        const item = document.createElement('div');
+        item.className = 'guest-item';
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'guest-name';
+        nameDiv.innerText = `${g.name} (${g.pax})`;
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'btn-group';
+        const btnArr = document.createElement('button');
+        btnArr.className = 'btn-arrived';
+        btnArr.innerText = 'Arrived';
+        btnArr.onclick = () => {
+          g.status = 'Arrived';
+          renderTables();
+        };
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn-delete';
+        btnDel.innerText = 'Delete';
+        btnDel.onclick = () => {
+          guests = guests.filter(x => x !== g);
+          renderTables();
+        };
+        btnGroup.appendChild(btnArr);
+        btnGroup.appendChild(btnDel);
+        item.appendChild(nameDiv);
+        item.appendChild(btnGroup);
+        list.appendChild(item);
+      });
+      card.appendChild(list);
+      container.appendChild(card);
+    });
+  }
 
-    guests
-        .filter(g => (filter === 'All' || g.status === filter))
-        .filter(g => g.name.toLowerCase().includes(search) || String(g.table).toLowerCase().includes(search))
-        .forEach((g, index) => {
-            const row = tbody.insertRow();
-            row.insertCell().textContent = g.name;
-            row.insertCell().textContent = g.pax;
-            row.insertCell().textContent = g.table;
-            row.insertCell().textContent = g.status;
+  function searchGuests() {
+    renderTables();
+    document.getElementById('search').value = ''; // Clear search input after search
+  }
 
-            const actionCell = row.insertCell();
-            if (g.status === 'RSVP') {
-                const arriveBtn = document.createElement('button');
-                arriveBtn.textContent = 'Arrived';
-                arriveBtn.className = 'btn arrive-btn';
-                arriveBtn.onclick = () => markArrived(index);
-                actionCell.appendChild(arriveBtn);
-            }
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'Delete';
-            delBtn.className = 'btn delete-btn';
-            delBtn.onclick = () => deleteGuest(index);
-            actionCell.appendChild(delBtn);
-        });
-}
+  function resetAll() {
+    guests.forEach(g => g.status = 'RSVP');
+    renderTables();
+  }
 
-function markArrived(index) {
-    guests[index].status = 'Arrived';
-    renderTable();
-}
-
-function deleteGuest(index) {
-    guests.splice(index, 1);
-    renderTable();
-}
+  renderTables();
 </script>
-
 </body></html>
