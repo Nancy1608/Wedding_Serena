@@ -1,207 +1,215 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head>
   <meta charset="UTF-8">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wedding Guest List</title>
 
 
   <style>
     body {
         font-family: 'Segoe UI', sans-serif;
-        background-color: #fffaf5;
+        background-color: #fff9f7;
         margin: 0;
         padding: 0;
-        color: #4b3832;
+        color: #5a4a42;
     }
     header {
-        background: linear-gradient(to right, #d4af37, #f8e1d4);
-        padding: 15px;
+        background: linear-gradient(90deg, #d4af37, #f7e7ce);
+        color: #5a4a42;
+        padding: 10px;
         text-align: center;
         font-size: 1.4em;
         font-weight: bold;
-        color: white;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
     }
     .controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        padding: 10px;
-        justify-content: center;
-        background-color: #fdf6f0;
+        text-align: center;
+        margin: 15px 0;
     }
-    input[type="file"], select, button, input[type="text"] {
-        padding: 8px;
-        border-radius: 8px;
+    .controls input {
+        padding: 6px;
         border: 1px solid #d4af37;
-        font-size: 1em;
+        border-radius: 4px;
     }
-    button {
+    .controls button {
+        padding: 6px 12px;
         background-color: #d4af37;
-        color: white;
         border: none;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
         cursor: pointer;
+        margin-left: 5px;
     }
-    button:hover {
-        background-color: #b8902f;
+    .controls button:hover {
+        background-color: #b8962e;
+    }
+    .counter {
+        font-size: 1.1em;
+        margin: 5px;
     }
     .table-group {
-        background-color: white;
-        margin: 15px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin: 15px auto;
+        width: 90%;
+        border: 2px solid #d4af37;
+        border-radius: 8px;
         overflow: hidden;
+        background-color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .table-header {
-        background-color: #f8e1d4;
-        padding: 10px;
+        background-color: #f7e7ce;
+        color: #5a4a42;
+        padding: 8px;
         font-weight: bold;
-        font-size: 1.2em;
-        border-bottom: 1px solid #f3d1c1;
+        position: sticky;
+        top: 50px;
+        z-index: 900;
+        border-bottom: 1px solid #d4af37;
     }
-    .guest {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        border-bottom: 1px solid #f9e8de;
+    table {
+        width: 100%;
+        border-collapse: collapse;
     }
-    .guest:last-child {
-        border-bottom: none;
+    th, td {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
     }
     .status-btn {
-        padding: 5px 10px;
-        border-radius: 6px;
+        padding: 4px 10px;
         border: none;
+        border-radius: 4px;
         font-size: 0.9em;
         cursor: pointer;
-    }
-    .RSVP {
-        background-color: #f8e1d4;
-        color: #4b3832;
-    }
-    .Arrived {
-        background-color: #d4af37;
         color: white;
     }
-    .counters {
-        text-align: center;
-        padding: 10px;
-        font-size: 1.1em;
-        background-color: #fff8f0;
-        border-bottom: 1px solid #f3d1c1;
+    .rsvp {
+        background-color: #d4af37;
+    }
+    .arrived {
+        background-color: #e67e99;
+    }
+    .status-btn:hover {
+        opacity: 0.8;
     }
   </style>
 </head><body>
 
 <header>Wedding Guest List</header>
-<div class="counters">
-    RSVP: <span id="rsvpCount">0</span> | Arrived: <span id="arrivedCount">0</span>
-</div>
-
 
 <div class="controls">
-    <input id="fileInput" accept=".xlsx, .xls" type="file">
-    <input id="searchInput" placeholder="Search..." type="text">
-    <button onclick="searchGuests()">Go</button>
-    <select id="statusFilter" onchange="renderGuests()">
-        <option value="All">All</option>
-        <option value="RSVP">RSVP</option>
-        <option value="Arrived">Arrived</option>
-    </select>
+    <input id="searchInput" placeholder="Search by name, table, or status" type="text">
+    <button onclick="searchGuest()">Go</button>
+    <button onclick="resetSearch()">Clear</button>
     <button onclick="resetAll()">Reset All to RSVP</button>
+    <div class="counter" id="counterRSVP">RSVP: 0</div>
+    <div class="counter" id="counterArrived">Arrived: 0</div>
 </div>
 
 
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-let guests = [];
+const guestData = [
+    [20,4,"Boon's Friends"],[20,6,"Serena's Friends"],[14,2,"Ming Ming & Spouse"],
+    [14,2,"Lee Kah Yee & Spouse"],[14,1,"Ming Ming&#8217;s Aunty"],[14,1,"Mrs Lim Tua Lek"],
+    [14,3,"Nicole Yap & Family"],[8,2,"Mr & Mrs Soon Chin Hoon"],[8,2,"Ong Ting Ting & Spouse"],
+    [8,2,"Mr & Mrs Jesse Jee"],[8,2,"Mr & Mrs Lee Peng Koon"],[8,2,"Mr & Mrs Loh Hoi Yew"],
+    [2,2,"Kian Mun & Daughter"],[2,1,"Amy"],[2,3,"Benny & Family"],[2,4,"Victor & Family"],
+    [21,1,"Gurdeu"],[21,4,"Jasvin, Annish & Family"],[21,3,"Sukhvinder & Family"],
+    [21,2,"Dato&#8217; & Datin Jesbil"],[15,2,"Mr & Mrs Chan (Joo Heong)"],[15,1,"Ricky Chan"],
+    [15,2,"Liew Li Fong & Spouse"],[15,2,"Tan Ai Tiang & Spouse"],[15,1,"Kevin Lau"],
+    [15,2,"Mr & Mrs Wong Yok Heng"],[9,10,"Seah Kiat Seng & Family"],[3,3,"Lay Weng & Family"],
+    [3,6,"Carmen & Family"],[3,1,"Nancy"],[22,2,"Mr & Mrs Loh Weng Cheong"],
+    [22,2,"Mr & Mrs Goh Keat Hoe"],[22,2,"Mr & Mrs Eric Woh Pei Su"],[22,2,"Mr & Mrs Francis Wong"],
+    [22,1,"Lim Hong Guan"],[22,1,"Ang Sing Hai"],[16,2,"Mr & Mrs Sunny Phang"],
+    [16,1,"Ms Eng Hui Mun"],[16,1,"Ms Tan Yoke Lan"],[16,2,"Mr & Mrs Ng Kim Siah"],
+    [16,2,"Mr & Mrs Yap Meow Sing"],[16,2,"Mr & Mrs Lim Tow Poe"],[10,1,"Ms Soo Kah Huey"],
+    [10,2,"Dato&#8217; & Datin Soo Kah Eng"],[10,2,"Dato&#8217; & Datin Lew Wai Koung"],[10,1,"Datin Toh Bee Huan"],
+    [10,2,"Mr & Mrs Soo Hock Chuan"],[10,1,"Mdm Lau Yoke Eng"],[10,1,"Mdm Isabelle Fam"],
+    [4,4,"Shirley & Family"],[4,1,"Annie"],[4,1,"Ruby"],[4,2,"Amy Tiew & Ah Ngoh"],[4,2,"Mr & Mrs Sunny Tiew"]
+];
 
-document.getElementById('fileInput').addEventListener('change', handleFile, false);
+let guests = guestData.map(([table, pax, name]) => ({ table, pax, name, status: "RSVP" }));
 
-function handleFile(e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
-        guests = rows.map(row => ({
-            table: row[0],
-            pax: row[1],
-            name: row[2],
-            status: 'RSVP'
-        }));
-        renderGuests();
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-function renderGuests(filterStatus = document.getElementById('statusFilter').value, searchTerm = '') {
-    const container = document.getElementById('guestList');
-    container.innerHTML = '';
-    const grouped = {};
-
+function renderGuests(filter = "") {
+    const container = document.getElementById("guestContainer");
+    container.innerHTML = "";
+    let grouped = {};
     guests.forEach(g => {
-        if ((filterStatus === 'All' || g.status === filterStatus) &&
-            (g.name.toLowerCase().includes(searchTerm) || g.table.toString().includes(searchTerm))) {
-            if (!grouped[g.table]) grouped[g.table] = [];
-            grouped[g.table].push(g);
-        }
+        if (!grouped[g.table]) grouped[g.table] = [];
+        grouped[g.table].push(g);
     });
 
-    Object.keys(grouped).sort((a,b) => a - b).forEach(tableNum => {
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'table-group';
-        const header = document.createElement('div');
-        header.className = 'table-header';
-        header.textContent = `Table ${tableNum}`;
+    for (let table in grouped) {
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "table-group";
+
+        const header = document.createElement("div");
+        header.className = "table-header";
+        header.textContent = `Table ${table}`;
         groupDiv.appendChild(header);
 
-        grouped[tableNum].forEach((guest, index) => {
-            const guestDiv = document.createElement('div');
-            guestDiv.className = 'guest';
-            guestDiv.innerHTML = `<span>${guest.name} (${guest.pax})</span>`;
-            const btn = document.createElement('button');
-            btn.textContent = guest.status;
-            btn.className = `status-btn ${guest.status}`;
-            btn.onclick = () => toggleStatus(guest);
-            guestDiv.appendChild(btn);
-            groupDiv.appendChild(guestDiv);
+        const tableEl = document.createElement("table");
+        const tbody = document.createElement("tbody");
+
+        grouped[table].forEach((g, index) => {
+            if (
+                !filter ||
+                g.name.toLowerCase().includes(filter) ||
+                g.status.toLowerCase().includes(filter) ||
+                g.table.toString().includes(filter)
+            ) {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${g.name}</td>
+                    <td>${g.pax}</td>
+                    <td><button class="status-btn ${g.status === "RSVP" ? "rsvp" : "arrived"}"
+                        onclick="toggleStatus(${g.table}, ${index})">${g.status}</button></td>
+                `;
+                tbody.appendChild(row);
+            }
         });
 
+        tableEl.appendChild(tbody);
+        groupDiv.appendChild(tableEl);
         container.appendChild(groupDiv);
-    });
-
+    }
     updateCounters();
 }
 
-function toggleStatus(guest) {
-    guest.status = guest.status === 'RSVP' ? 'Arrived' : 'RSVP';
+function toggleStatus(table, index) {
+    const group = guests.filter(g => g.table === table);
+    const guestIndex = guests.indexOf(group[index]);
+    guests[guestIndex].status = guests[guestIndex].status === "RSVP" ? "Arrived" : "RSVP";
     renderGuests();
 }
 
 function resetAll() {
-    guests.forEach(g => g.status = 'RSVP');
+    guests.forEach(g => g.status = "RSVP");
     renderGuests();
 }
 
-function searchGuests() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
-    renderGuests(document.getElementById('statusFilter').value, term);
-    document.getElementById('searchInput').value = '';
-}
-
 function updateCounters() {
-    const rsvpCount = guests.filter(g => g.status === 'RSVP').length;
-    const arrivedCount = guests.filter(g => g.status === 'Arrived').length;
-    document.getElementById('rsvpCount').textContent = rsvpCount;
-    document.getElementById('arrivedCount').textContent = arrivedCount;
+    const totalRSVP = guests.filter(g => g.status === "RSVP").length;
+    const totalArrived = guests.filter(g => g.status === "Arrived").length;
+    document.getElementById("counterRSVP").textContent = `RSVP: ${totalRSVP}`;
+    document.getElementById("counterArrived").textContent = `Arrived: ${totalArrived}`;
 }
-</script>
 
+function searchGuest() {
+    const val = document.getElementById("searchInput").value.trim().toLowerCase();
+    renderGuests(val);
+    document.getElementById("searchInput").value = "";
+}
+
+function resetSearch() {
+    document.getElementById("searchInput").value = "";
+    renderGuests();
+}
+
+renderGuests();
+</script>
 </body></html>
