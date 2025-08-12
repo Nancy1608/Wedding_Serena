@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+  <meta charset="UTF-8">
+  <title>Wedding Guest Seating</title>
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 10px; background: #fff; }
+    h2 { text-align: center; font-size: 1.5em; }
+    input, select, button { padding: 10px; margin: 5px 0; font-size: 16px; }
+    select, input[type="file"] { width: 100%; }
+    button { border: none; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 10px; font-size: 16px; text-align: left; }
+    th { background: #f2f2f2; }
+    .btn { padding: 8px 12px; margin: 2px; cursor: pointer; border-radius: 6px; font-size: 14px; }
+    .delete-btn { background: red; color: white; }
+    .arrive-btn { background: green; color: white; }
+    .filter-box { display: flex; gap: 5px; flex-wrap: wrap; }
+    .filter-box input[type="text"] { flex: 1; min-width: 120px; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head><body>
+
+<h2>Wedding Guest Seating</h2>
+
+
+<input id="uploadExcel" accept=".xlsx, .xls" type="file">
+
+<div class="filter-box">
+    <select id="statusFilter">
+        <option value="All">All</option>
+        <option value="RSVP">RSVP</option>
+        <option value="Arrived">Arrived</option>
+    </select>
+    <input id="searchBox" placeholder="Search by name or table" type="text">
+    <button onclick="renderTable()">Search</button>
+</div>
+
+
+<table id="guestTable">
+
+    <thead>
+        <tr>
+            <th>Guest Name</th>
+            <th>No. of Pax</th>
+            <th>Table No</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+
+<script>
+let guests = [];
+
+document.getElementById('uploadExcel').addEventListener('change', handleFile);
+
+function handleFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+
+        guests = json.map(row => ({
+            name: row[0],
+            pax: row[1],
+            table: row[2],
+            status: 'RSVP'
+        }));
+        renderTable();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function renderTable() {
+    const filter = document.getElementById('statusFilter').value;
+    const search = document.getElementById('searchBox').value.toLowerCase();
+    const tbody = document.querySelector('#guestTable tbody');
+    tbody.innerHTML = '';
+
+    guests
+        .filter(g => (filter === 'All' || g.status === filter))
+        .filter(g => g.name.toLowerCase().includes(search) || String(g.table).toLowerCase().includes(search))
+        .forEach((g, index) => {
+            const row = tbody.insertRow();
+            row.insertCell().textContent = g.name;
+            row.insertCell().textContent = g.pax;
+            row.insertCell().textContent = g.table;
+            row.insertCell().textContent = g.status;
+
+            const actionCell = row.insertCell();
+            if (g.status === 'RSVP') {
+                const arriveBtn = document.createElement('button');
+                arriveBtn.textContent = 'Arrived';
+                arriveBtn.className = 'btn arrive-btn';
+                arriveBtn.onclick = () => markArrived(index);
+                actionCell.appendChild(arriveBtn);
+            }
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'Delete';
+            delBtn.className = 'btn delete-btn';
+            delBtn.onclick = () => deleteGuest(index);
+            actionCell.appendChild(delBtn);
+        });
+}
+
+function markArrived(index) {
+    guests[index].status = 'Arrived';
+    renderTable();
+}
+
+function deleteGuest(index) {
+    guests.splice(index, 1);
+    renderTable();
+}
+</script>
+
+</body></html>
