@@ -1,227 +1,207 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wedding Guest Check-in</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #fffaf0; /* Cream background */
-    margin: 0;
-    padding: 0;
-    color: #333;
-  }
-  header {
-    background: linear-gradient(90deg, #d4af37, #f5deb3);
-    color: #4b3832;
-    text-align: center;
-    padding: 1rem;
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-  .controls {
-    padding: 1rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .controls input, .controls select, .controls button {
-    padding: 0.5rem;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  .controls button {
-    background-color: #d4af37;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-  }
-  .controls button:hover {
-    background-color: #b8962e;
-  }
-  .table-card {
-    background-color: #fff;
-    margin: 1rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    overflow: hidden;
-  }
-  .table-header {
-    background-color: #f5deb3;
-    padding: 0.75rem 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .guest-list {
-    padding: 0.5rem 1rem;
-  }
-  .guest-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid #eee;
-    align-items: center;
-  }
-  .guest-name {
-    flex: 1;
-  }
-  .btn-group button {
-    margin-left: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    border: none;
-    cursor: pointer;
-  }
-  .btn-arrived {
-    background-color: #6b8e23;
-    color: #fff;
-  }
-  .btn-delete {
-    background-color: #b22222;
-    color: #fff;
-  }
-</style>
-</head>
-<body>
-<header>Wedding Guest Check-in</header>
-<div class="controls">
-  <input type="text" id="search" placeholder="Search...">
-  <select id="statusFilter">
-    <option value="all">All</option>
-    <option value="RSVP">RSVP</option>
-    <option value="Arrived">Arrived</option>
-  </select>
-  <button onclick="searchGuests()">Go</button>
-  <button onclick="resetAll()">Reset All to RSVP</button>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wedding Guest List</title>
+
+
+  <style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #fffaf5;
+        margin: 0;
+        padding: 0;
+        color: #4b3832;
+    }
+    header {
+        background: linear-gradient(to right, #d4af37, #f8e1d4);
+        padding: 15px;
+        text-align: center;
+        font-size: 1.4em;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px;
+        justify-content: center;
+        background-color: #fdf6f0;
+    }
+    input[type="file"], select, button, input[type="text"] {
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #d4af37;
+        font-size: 1em;
+    }
+    button {
+        background-color: #d4af37;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #b8902f;
+    }
+    .table-group {
+        background-color: white;
+        margin: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    .table-header {
+        background-color: #f8e1d4;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 1.2em;
+        border-bottom: 1px solid #f3d1c1;
+    }
+    .guest {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #f9e8de;
+    }
+    .guest:last-child {
+        border-bottom: none;
+    }
+    .status-btn {
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: none;
+        font-size: 0.9em;
+        cursor: pointer;
+    }
+    .RSVP {
+        background-color: #f8e1d4;
+        color: #4b3832;
+    }
+    .Arrived {
+        background-color: #d4af37;
+        color: white;
+    }
+    .counters {
+        text-align: center;
+        padding: 10px;
+        font-size: 1.1em;
+        background-color: #fff8f0;
+        border-bottom: 1px solid #f3d1c1;
+    }
+  </style>
+</head><body>
+
+<header>Wedding Guest List</header>
+<div class="counters">
+    RSVP: <span id="rsvpCount">0</span> | Arrived: <span id="arrivedCount">0</span>
 </div>
-<div id="tablesContainer"></div>
+
+
+<div class="controls">
+    <input id="fileInput" accept=".xlsx, .xls" type="file">
+    <input id="searchInput" placeholder="Search..." type="text">
+    <button onclick="searchGuests()">Go</button>
+    <select id="statusFilter" onchange="renderGuests()">
+        <option value="All">All</option>
+        <option value="RSVP">RSVP</option>
+        <option value="Arrived">Arrived</option>
+    </select>
+    <button onclick="resetAll()">Reset All to RSVP</button>
+</div>
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-  let guests = [
-    {table:20, pax:4, name:"Boon's Friends", status:"RSVP"},
-    {table:20, pax:6, name:"Serena's Friends", status:"RSVP"},
-    {table:14, pax:2, name:"Ming Ming & Spouse", status:"RSVP"},
-    {table:14, pax:2, name:"Lee Kah Yee & Spouse", status:"RSVP"},
-    {table:14, pax:1, name:"Ming Ming’s Aunty", status:"RSVP"},
-    {table:14, pax:1, name:"Mrs Lim Tua Lek", status:"RSVP"},
-    {table:14, pax:3, name:"Nicole Yap & Family", status:"RSVP"},
-    {table:8, pax:2, name:"Mr & Mrs Soon Chin Hoon", status:"RSVP"},
-    {table:8, pax:2, name:"Ong Ting Ting & Spouse", status:"RSVP"},
-    {table:8, pax:2, name:"Mr & Mrs Jesse Jee", status:"RSVP"},
-    {table:8, pax:2, name:"Mr & Mrs Lee Peng Koon", status:"RSVP"},
-    {table:8, pax:2, name:"Mr & Mrs Loh Hoi Yew", status:"RSVP"},
-    {table:2, pax:2, name:"Kian Mun & Daughter", status:"RSVP"},
-    {table:2, pax:1, name:"Amy", status:"RSVP"},
-    {table:2, pax:3, name:"Benny & Family", status:"RSVP"},
-    {table:2, pax:4, name:"Victor & Family", status:"RSVP"},
-    {table:21, pax:1, name:"Gurdeu", status:"RSVP"},
-    {table:21, pax:4, name:"Jasvin, Annish & Family", status:"RSVP"},
-    {table:21, pax:3, name:"Sukhvinder & Family", status:"RSVP"},
-    {table:21, pax:2, name:"Dato’ & Datin Jesbil", status:"RSVP"},
-    {table:15, pax:2, name:"Mr & Mrs Chan (Joo Heong)", status:"RSVP"},
-    {table:15, pax:1, name:"Ricky Chan", status:"RSVP"},
-    {table:15, pax:2, name:"Liew Li Fong & Spouse", status:"RSVP"},
-    {table:15, pax:2, name:"Tan Ai Tiang & Spouse", status:"RSVP"},
-    {table:15, pax:1, name:"Kevin Lau", status:"RSVP"},
-    {table:15, pax:2, name:"Mr & Mrs Wong Yok Heng", status:"RSVP"},
-    {table:9, pax:10, name:"Seah Kiat Seng & Family", status:"RSVP"},
-    {table:3, pax:3, name:"Lay Weng & Family", status:"RSVP"},
-    {table:3, pax:6, name:"Carmen & Family", status:"RSVP"},
-    {table:3, pax:1, name:"Nancy", status:"RSVP"},
-    {table:22, pax:2, name:"Mr & Mrs Loh Weng Cheong", status:"RSVP"},
-    {table:22, pax:2, name:"Mr & Mrs Goh Keat Hoe", status:"RSVP"},
-    {table:22, pax:2, name:"Mr & Mrs Eric Woh Pei Su", status:"RSVP"},
-    {table:22, pax:2, name:"Mr & Mrs Francis Wong", status:"RSVP"},
-    {table:22, pax:1, name:"Lim Hong Guan", status:"RSVP"},
-    {table:22, pax:1, name:"Ang Sing Hai", status:"RSVP"},
-    {table:16, pax:2, name:"Mr & Mrs Sunny Phang", status:"RSVP"},
-    {table:16, pax:1, name:"Ms Eng Hui Mun", status:"RSVP"},
-    {table:16, pax:1, name:"Ms Tan Yoke Lan", status:"RSVP"},
-    {table:16, pax:2, name:"Mr & Mrs Ng Kim Siah", status:"RSVP"},
-    {table:16, pax:2, name:"Mr & Mrs Yap Meow Sing", status:"RSVP"},
-    {table:16, pax:2, name:"Mr & Mrs Lim Tow Poe", status:"RSVP"},
-    {table:10, pax:1, name:"Ms Soo Kah Huey", status:"RSVP"},
-    {table:10, pax:2, name:"Dato’ & Datin Soo Kah Eng", status:"RSVP"},
-    {table:10, pax:2, name:"Dato’ & Datin Lew Wai Koung", status:"RSVP"},
-    {table:10, pax:1, name:"Datin Toh Bee Huan", status:"RSVP"},
-    {table:10, pax:2, name:"Mr & Mrs Soo Hock Chuan", status:"RSVP"},
-    {table:10, pax:1, name:"Mdm Lau Yoke Eng", status:"RSVP"},
-    {table:10, pax:1, name:"Mdm Isabelle Fam", status:"RSVP"},
-    {table:4, pax:4, name:"Shirley & Family", status:"RSVP"},
-    {table:4, pax:1, name:"Annie", status:"RSVP"},
-    {table:4, pax:1, name:"Ruby", status:"RSVP"},
-    {table:4, pax:2, name:"Amy Tiew & Ah Ngoh", status:"RSVP"},
-    {table:4, pax:2, name:"Mr & Mrs Sunny Tiew", status:"RSVP"}
-  ];
+let guests = [];
 
-  function renderTables() {
-    const container = document.getElementById('tablesContainer');
+document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
+function handleFile(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+        guests = rows.map(row => ({
+            table: row[0],
+            pax: row[1],
+            name: row[2],
+            status: 'RSVP'
+        }));
+        renderGuests();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function renderGuests(filterStatus = document.getElementById('statusFilter').value, searchTerm = '') {
+    const container = document.getElementById('guestList');
     container.innerHTML = '';
-    const filter = document.getElementById('statusFilter').value;
-    const searchVal = document.getElementById('search').value.toLowerCase();
     const grouped = {};
+
     guests.forEach(g => {
-      if (filter !== 'all' && g.status !== filter) return;
-      if (searchVal && !g.name.toLowerCase().includes(searchVal) && g.table.toString() !== searchVal) return;
-      if (!grouped[g.table]) grouped[g.table] = [];
-      grouped[g.table].push(g);
+        if ((filterStatus === 'All' || g.status === filterStatus) &&
+            (g.name.toLowerCase().includes(searchTerm) || g.table.toString().includes(searchTerm))) {
+            if (!grouped[g.table]) grouped[g.table] = [];
+            grouped[g.table].push(g);
+        }
     });
-    Object.keys(grouped).sort((a,b)=>a-b).forEach(tableNum => {
-      const card = document.createElement('div');
-      card.className = 'table-card';
-      const header = document.createElement('div');
-      header.className = 'table-header';
-      header.innerText = `Table ${tableNum}  (Pax: ${grouped[tableNum].reduce((sum,g)=>sum+g.pax,0)})`;
-      card.appendChild(header);
-      const list = document.createElement('div');
-      list.className = 'guest-list';
-      grouped[tableNum].forEach((g, i) => {
-        const item = document.createElement('div');
-        item.className = 'guest-item';
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'guest-name';
-        nameDiv.innerText = `${g.name} (${g.pax})`;
-        const btnGroup = document.createElement('div');
-        btnGroup.className = 'btn-group';
-        const btnArr = document.createElement('button');
-        btnArr.className = 'btn-arrived';
-        btnArr.innerText = 'Arrived';
-        btnArr.onclick = () => { g.status = 'Arrived'; renderTables(); };
-        const btnDel = document.createElement('button');
-        btnDel.className = 'btn-delete';
-        btnDel.innerText = 'Delete';
-        btnDel.onclick = () => {
-          guests = guests.filter(x => x !== g);
-          renderTables();
-        };
-        btnGroup.appendChild(btnArr);
-        btnGroup.appendChild(btnDel);
-        item.appendChild(nameDiv);
-        item.appendChild(btnGroup);
-        list.appendChild(item);
-      });
-      card.appendChild(list);
-      container.appendChild(card);
+
+    Object.keys(grouped).sort((a,b) => a - b).forEach(tableNum => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'table-group';
+        const header = document.createElement('div');
+        header.className = 'table-header';
+        header.textContent = `Table ${tableNum}`;
+        groupDiv.appendChild(header);
+
+        grouped[tableNum].forEach((guest, index) => {
+            const guestDiv = document.createElement('div');
+            guestDiv.className = 'guest';
+            guestDiv.innerHTML = `<span>${guest.name} (${guest.pax})</span>`;
+            const btn = document.createElement('button');
+            btn.textContent = guest.status;
+            btn.className = `status-btn ${guest.status}`;
+            btn.onclick = () => toggleStatus(guest);
+            guestDiv.appendChild(btn);
+            groupDiv.appendChild(guestDiv);
+        });
+
+        container.appendChild(groupDiv);
     });
-  }
 
-  function searchGuests() {
-    renderTables();
-    document.getElementById('search').value = ''; // clear search
-  }
+    updateCounters();
+}
 
-  function resetAll() {
+function toggleStatus(guest) {
+    guest.status = guest.status === 'RSVP' ? 'Arrived' : 'RSVP';
+    renderGuests();
+}
+
+function resetAll() {
     guests.forEach(g => g.status = 'RSVP');
-    renderTables();
-  }
+    renderGuests();
+}
 
-  renderTables();
+function searchGuests() {
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    renderGuests(document.getElementById('statusFilter').value, term);
+    document.getElementById('searchInput').value = '';
+}
+
+function updateCounters() {
+    const rsvpCount = guests.filter(g => g.status === 'RSVP').length;
+    const arrivedCount = guests.filter(g => g.status === 'Arrived').length;
+    document.getElementById('rsvpCount').textContent = rsvpCount;
+    document.getElementById('arrivedCount').textContent = arrivedCount;
+}
 </script>
-</body>
-</html>
+
+</body></html>
