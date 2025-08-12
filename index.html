@@ -1,12 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head>
-  <meta charset="UTF-8">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wedding Guest Check-in</title>
-
-
-  <style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wedding Guest Check-in</title>
+<style>
   body {
     font-family: Arial, sans-serif;
     background-color: #fffaf0; /* Cream background */
@@ -29,9 +27,7 @@
     gap: 0.5rem;
     justify-content: center;
   }
-  .controls input,
-  .controls select,
-  .controls button {
+  .controls input, .controls select, .controls button {
     padding: 0.5rem;
     font-size: 1rem;
     border-radius: 6px;
@@ -91,11 +87,12 @@
     background-color: #b22222;
     color: #fff;
   }
-  </style>
-</head><body>
+</style>
+</head>
+<body>
 <header>Wedding Guest Check-in</header>
 <div class="controls">
-  <input id="search" placeholder="Search..." type="text">
+  <input type="text" id="search" placeholder="Search...">
   <select id="statusFilter">
     <option value="all">All</option>
     <option value="RSVP">RSVP</option>
@@ -104,15 +101,14 @@
   <button onclick="searchGuests()">Go</button>
   <button onclick="resetAll()">Reset All to RSVP</button>
 </div>
-
-
+<div id="tablesContainer"></div>
 <script>
   let guests = [
     {table:20, pax:4, name:"Boon's Friends", status:"RSVP"},
     {table:20, pax:6, name:"Serena's Friends", status:"RSVP"},
     {table:14, pax:2, name:"Ming Ming & Spouse", status:"RSVP"},
     {table:14, pax:2, name:"Lee Kah Yee & Spouse", status:"RSVP"},
-    {table:14, pax:1, name:"Ming Ming&#8217;s Aunty", status:"RSVP"},
+    {table:14, pax:1, name:"Ming Ming’s Aunty", status:"RSVP"},
     {table:14, pax:1, name:"Mrs Lim Tua Lek", status:"RSVP"},
     {table:14, pax:3, name:"Nicole Yap & Family", status:"RSVP"},
     {table:8, pax:2, name:"Mr & Mrs Soon Chin Hoon", status:"RSVP"},
@@ -127,7 +123,7 @@
     {table:21, pax:1, name:"Gurdeu", status:"RSVP"},
     {table:21, pax:4, name:"Jasvin, Annish & Family", status:"RSVP"},
     {table:21, pax:3, name:"Sukhvinder & Family", status:"RSVP"},
-    {table:21, pax:2, name:"Dato&#8217; & Datin Jesbil", status:"RSVP"},
+    {table:21, pax:2, name:"Dato’ & Datin Jesbil", status:"RSVP"},
     {table:15, pax:2, name:"Mr & Mrs Chan (Joo Heong)", status:"RSVP"},
     {table:15, pax:1, name:"Ricky Chan", status:"RSVP"},
     {table:15, pax:2, name:"Liew Li Fong & Spouse", status:"RSVP"},
@@ -151,8 +147,8 @@
     {table:16, pax:2, name:"Mr & Mrs Yap Meow Sing", status:"RSVP"},
     {table:16, pax:2, name:"Mr & Mrs Lim Tow Poe", status:"RSVP"},
     {table:10, pax:1, name:"Ms Soo Kah Huey", status:"RSVP"},
-    {table:10, pax:2, name:"Dato&#8217; & Datin Soo Kah Eng", status:"RSVP"},
-    {table:10, pax:2, name:"Dato&#8217; & Datin Lew Wai Koung", status:"RSVP"},
+    {table:10, pax:2, name:"Dato’ & Datin Soo Kah Eng", status:"RSVP"},
+    {table:10, pax:2, name:"Dato’ & Datin Lew Wai Koung", status:"RSVP"},
     {table:10, pax:1, name:"Datin Toh Bee Huan", status:"RSVP"},
     {table:10, pax:2, name:"Mr & Mrs Soo Hock Chuan", status:"RSVP"},
     {table:10, pax:1, name:"Mdm Lau Yoke Eng", status:"RSVP"},
@@ -176,16 +172,16 @@
       if (!grouped[g.table]) grouped[g.table] = [];
       grouped[g.table].push(g);
     });
-    Object.keys(grouped).sort((a,b) => a - b).forEach(tableNum => {
+    Object.keys(grouped).sort((a,b)=>a-b).forEach(tableNum => {
       const card = document.createElement('div');
       card.className = 'table-card';
       const header = document.createElement('div');
       header.className = 'table-header';
-      header.innerText = `Table ${tableNum}  (Pax: ${grouped[tableNum].reduce((sum, g) => sum + g.pax, 0)})`;
+      header.innerText = `Table ${tableNum}  (Pax: ${grouped[tableNum].reduce((sum,g)=>sum+g.pax,0)})`;
       card.appendChild(header);
       const list = document.createElement('div');
       list.className = 'guest-list';
-      grouped[tableNum].forEach((g) => {
+      grouped[tableNum].forEach((g, i) => {
         const item = document.createElement('div');
         item.className = 'guest-item';
         const nameDiv = document.createElement('div');
@@ -196,10 +192,7 @@
         const btnArr = document.createElement('button');
         btnArr.className = 'btn-arrived';
         btnArr.innerText = 'Arrived';
-        btnArr.onclick = () => {
-          g.status = 'Arrived';
-          renderTables();
-        };
+        btnArr.onclick = () => { g.status = 'Arrived'; renderTables(); };
         const btnDel = document.createElement('button');
         btnDel.className = 'btn-delete';
         btnDel.innerText = 'Delete';
@@ -220,7 +213,7 @@
 
   function searchGuests() {
     renderTables();
-    document.getElementById('search').value = ''; // Clear search input after search
+    document.getElementById('search').value = ''; // clear search
   }
 
   function resetAll() {
@@ -230,4 +223,5 @@
 
   renderTables();
 </script>
-</body></html>
+</body>
+</html>
