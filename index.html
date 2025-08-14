@@ -1,131 +1,115 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head>
+<!DOCTYPE html>
+<html lang="en"><head>
+  
   <meta charset="UTF-8">
 
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wedding Guest List</title>
 
-
+  
+  
   <style>
 body { font-family: Arial, sans-serif; background: #fff; margin: 0; padding: 0; }
 .container { padding: 10px; max-width: 1000px; margin: auto; }
 .filters-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
 button { padding: 8px 12px; border: none; cursor: pointer; border-radius: 4px; }
 .arrived-btn { background: #4CAF50; color: white; }
-.pending-btn { background: #DAA520; color: black; }
+.pending-btn { background: #DAA520; color: black; } /* gold color */
 .clear-btn { background: red; color: white; border-radius: 50%; padding: 0 6px; cursor: pointer; font-weight: bold; }
 table { border-collapse: collapse; width: 100%; }
 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 th { background-color: #f2f2f2; }
 .card { border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
 @media (max-width: 768px) {
-    table { display: none; }
-    .card { display: block; }
-    .filters-row { flex-direction: row; }
+table { display: none; }
+.card { display: block; }
+.filters-row { flex-direction: row; }
 }
 @media (min-width: 769px) {
-    .card { display: none; }
+.card { display: none; }
 }
   </style>
 </head><body>
 <div class="container">
-    <!-- First row: filter buttons + total pax -->
-    <div class="filters-row">
-        <button onclick="filterGuests('all')">All</button>
-        <button onclick="filterGuests('arrived')">Arrived</button>
-        <button onclick="filterGuests('pending')">Pending</button>
-        
-    </div>
-
-    <!-- Second row: search + clear + revert -->
-    <div class="filters-row">
-        <input id="search" placeholder="Search by guest or table..." oninput="searchGuests()" type="text">
-        <span class="clear-btn" onclick="clearSearch()">�</span>
-        <button onclick="revertAll()">Revert All</button>
-    </div>
-
-    <table id="guestTable">
-        <thead>
-            <tr>
-                <th>Table No</th>
-                <th>Guest Name</th>
-                <th>Pax</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    
+<!-- First row: filter buttons + total pax -->
+<div class="filters-row"> <button onclick="filterGuests('all')">All</button>
+<button onclick="filterGuests('arrived')">Arrived</button> <button onclick="filterGuests('pending')">Pending</button>
 </div>
-
+<!-- Second row: search + clear + revert -->
+<div class="filters-row"> <input id="search" placeholder="Search by guest or table..." oninput="searchGuests()" type="text"> <span class="clear-btn" onclick="clearSearch()">×</span>
+<button onclick="revertAll()">Revert All</button>
+</div>
+<table id="guestTable">
+  <thead> <tr>
+    <th>Table No</th>
+    <th>Guest Name</th>
+    <th>Pax</th>
+    <th>Status</th>
+  </tr>
+  </thead> <tbody>
+  </tbody>
+</table>
+</div>
 
 <script>
 let guests = [
-[20, 1, "Boon's Friends - 1"],
-[20, 1, "Boon's Friends - 2"],
-[20, 1, "Boon's Friends - 3"],
-[20, 1, "Boon's Friends - 4"],
-[20, 1, "Serena's Friends - 1"],
-[20, 1, "Serena's Friends - 2"],
-[20, 1, "Serena's Friends - 3"],
-[20, 1, "Serena's Friends - 4"],
-[20, 1, "Serena's Friends - 5"],
-[20, 1, "Serena's Friends - 6"],
-[14, 2, "Ming Ming & Spouse"],
-[14, 2, "Lee Kah Yee & Spouse"],
-[14, 1, "Ming Ming&#8217;s Aunty"],
-[14, 1, "Mrs Lim Tua Lek"],
-[14, 3, "Nicole Yap & Family"],
-[8, 2, "Mr & Mrs Soon Chin Hoon"],
-[8, 2, "Ong Ting Ting & Spouse"],
-[8, 2, "Mr & Mrs Jesse Jee"],
-[8, 2, "Mr & Mrs Loh Hoi Yew"],
-[8, 1, "Mdm Isabelle Fam"],
-[2, 1, "Kian Mun"],
-[2, 1, "Amy"],
-[2, 3, "Benny & Family"],
-[2, 4, "Victor & Family"],
-[21, 1, "Gurdeu"],
-[21, 4, "Jasvin, Annish & Family"],
-[21, 3, "Sukhvinder & Family"],
-[21, 2, "Dato&#8217; & Datin Jesbil"],
-[15, 1, "Ricky Chan"],
-[15, 2, "Liew Li Fong & Spouse"],
-[15, 2, "Tan Ai Tiang & Spouse"],
-[15, 1, "Kevin Lau"],
-[15, 2, "Mr & Mrs Wong Yok Heng"],
-[15, 1, "Mr Sunny Phang"],
-[9, 10, "Seah Kiat Seng & Family"],
-[3, 3, "Lay Weng & Family"],
-[3, 6, "Carmen & Family"],
-[3, 1, "Nancy"],
-[22, 2, "Mr & Mrs Loh Weng Cheong"],
-[22, 2, "Mr & Mrs Goh Keat Hoe"],
-[22, 2, "Mr & Mrs Eric Woh Pei Su"],
-[22, 2, "Mr & Mrs Francis Wong"],
-[22, 1, "Lim Hong Guan"],
-[22, 1, "Ang Sing Hai"],
-[16, 1, "Ms Eng Hui Mun"],
-[16, 1, "Ms Tan Yoke Lan"],
-[16, 2, "Mr & Mrs Ng Kim Siah"],
-[16, 2, "Mr & Mrs Yap Meow Sing"],
-[16, 2, "Mr & Mrs Lim Tow Poe"],
-[16, 2, "Mr & Mrs Lee Peng Koon"],
-[10, 1, "Ms Soo Kah Huey"],
-[10, 2, "Dato&#8217; & Datin Soo Kah Eng"],
-[10, 2, "Dato&#8217; & Datin Lew Wai Koung"],
-[10, 1, "Datin Toh Bee Huan"],
-[10, 2, "Mr & Mrs Soo Hock Chuan"],
-[10, 1, "Mdm Lau Yoke Eng"],
-[4, 4, "Shirley & Family"],
-[4, 1, "Annie"],
-[4, 1, "Ruby"],
-[4, 2, "Amy Tiew & Ah Ngoh"],
-[4, 2, "Mr & Mrs Sunny Tiew"]
+  [20, 4, "Boon's Friends"],
+  [20, 6, "Serena's Friends"],
+  [14, 2, "Ming Ming & Spouse"],
+  [14, 2, "Lee Kah Yee & Spouse"],
+  [14, 1, "Ming Ming’s Aunty"],
+  [14, 1, "Mrs Lim Tua Lek"],
+  [14, 3, "Nicole Yap & Family"],
+  [8, 2, "Mr & Mrs Soon Chin Hoon"],
+  [8, 2, "Ong Ting Ting & Spouse"],
+  [8, 2, "Mr & Mrs Jesse Jee"],
+  [8, 1, "Mdm Isabelle Fam"],
+  [8, 2, "Mr & Mrs Loh Hoi Yew"],
+  [2, 1, "Kian Mun"],
+  [2, 1, "Amy"],
+  [2, 3, "Benny & Family"],
+  [2, 4, "Victor & Family"],
+  [21, 1, "Gurdeu"],
+  [21, 4, "Jasvin, Annish & Family"],
+  [21, 3, "Sukhvinder & Family"],
+  [21, 2, "Dato’ & Datin Jesbil"],
+  [15, 1, "Ricky Chan"],
+  [15, 2, "Liew Li Fong & Spouse"],
+  [15, 2, "Tan Ai Tiang & Spouse"],
+  [15, 1, "Kevin Lau"],
+  [15, 1, "Mr Sunny Phang"],
+  [15, 2, "Mr & Mrs Wong Yok Heng"],
+  [9, 10, "Seah Kiat Seng & Family"],
+  [3, 3, "Lay Weng & Family"],
+  [3, 6, "Carmen & Family"],
+  [3, 1, "Nancy"],
+  [22, 2, "Mr & Mrs Loh Weng Cheong"],
+  [22, 2, "Mr & Mrs Goh Keat Hoe"],
+  [22, 2, "Mr & Mrs Eric Woh Pei Su"],
+  [22, 2, "Mr & Mrs Francis Wong"],
+  [22, 1, "Lim Hong Guan"],
+  [22, 1, "Ang Sing Hai"],
+  [16, 1, "Ms Eng Hui Mun"],
+  [16, 1, "Ms Tan Yoke Lan"],
+  [16, 2, "Mr & Mrs Ng Kim Siah"],
+  [16, 2, "Mr & Mrs Yap Meow Sing"],
+  [16, 2, "Mr & Mrs Lim Tow Poe"],
+  [16, 2, "Mr & Mrs Lee Peng Koon"],
+  [10, 1, "Ms Soo Kah Huey"],
+  [10, 2, "Dato’ & Datin Soo Kah Eng"],
+  [10, 2, "Dato’ & Datin Lew Wai Koung"],
+  [10, 1, "Datin Toh Bee Huan"],
+  [10, 2, "Mr & Mrs Soo Hock Chuan"],
+  [10, 1, "Mdm Lau Yoke Eng"],
+  [4, 4, "Shirley & Family"],
+  [4, 1, "Annie"],
+  [4, 1, "Ruby"],
+  [4, 2, "Amy Tiew & Ah Ngoh"],
+  [4, 2, "Mr & Mrs Sunny Tiew"]
 ];
 
-// optional: sort by table number then name
+// optional: sort by table number (ascending) then name
 guests.sort((a,b) => (a[0]-b[0]) || a[2].localeCompare(b[2]));
 
 let statusMap = JSON.parse(localStorage.getItem('guestStatus')) || {};
@@ -147,31 +131,35 @@ function updateDisplay() {
         const status = statusMap[name] || 'pending';
         const matchesSearch = !searchTerm ||
             name.toLowerCase().includes(searchTerm) ||
-            String(g[0]).includes(searchTerm);
+            String(g[0]).includes(searchTerm); // search by table number
         const matchesFilter = (currentFilter === 'all') || (currentFilter === status);
         return matchesSearch && matchesFilter;
     });
 
+    // Sum pax correctly from filtered rows
     const totalPax = filtered.reduce((sum, g) => sum + Number(g[1]), 0);
     document.getElementById('totalPax').innerText = 'Total Pax: ' + totalPax;
 
+    // render rows/cards
     filtered.forEach(g => {
         const [tableNo, pax, name] = g;
         const status = statusMap[name] || 'pending';
         const btnClass = (status === 'arrived') ? 'arrived-btn' : 'pending-btn';
         const btnLabel = (status === 'arrived') ? 'Arrived' : 'Pending';
 
+        // Desktop table
         tbody.innerHTML += `<tr>
             <td>${tableNo}</td>
             <td>${name}</td>
             <td>${pax}</td>
-            <td><button class="${btnClass}" onclick="toggleStatus('${name.replace(/'/g, "\\'")}')">${btnLabel}</button></td>
+            <td><button class="${btnClass}" onclick="toggleStatus('${name.replace(/'/g, "\'")}')">${btnLabel}</button></td>
         </tr>`;
 
+        // Mobile card
         cardsContainer.innerHTML += `<div class="card">
             <strong>Table:</strong> ${tableNo}<br>
             <strong>Name:</strong> ${name} (Pax: ${pax})<br>
-            <button class="${btnClass}" onclick="toggleStatus('${name.replace(/'/g, "\\'")}')">${btnLabel}</button>
+            <button class="${btnClass}" onclick="toggleStatus('${name.replace(/'/g, "\'")}')">${btnLabel}</button>
         </div>`;
     });
 }
